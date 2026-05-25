@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مريدولا 🤍</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Cairo',sans-serif; background:#f5f0eb; color:#2d2416; min-height:100vh; overflow-x:hidden; }
+
+  /* LOCK */
+  #lock-screen {
+    position:fixed; inset:0; background:#f5f0eb;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:999; transition:opacity 0.8s, transform 0.8s;
+  }
+  #lock-screen.hide { opacity:0; transform:scale(1.05); pointer-events:none; }
+  .lock-card {
+    background:#fff; border:1px solid #e2d9cf; border-radius:28px;
+    padding:52px 44px; text-align:center; max-width:380px; width:90%;
+    box-shadow:0 16px 60px rgba(120,80,40,0.1);
+  }
+  .lock-icon { font-size:56px; margin-bottom:18px; display:block; animation:swing 3s ease-in-out infinite; }
+  @keyframes swing { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+  .lock-title { font-family:'Amiri',serif; font-size:30px; color:#5c3d1e; margin-bottom:6px; }
+  .lock-sub { font-size:14px; color:#a08060; margin-bottom:30px; }
+  .lock-input {
+    width:100%; padding:15px 20px; border-radius:50px;
+    border:1.5px solid #ddd0c0; background:#faf7f3;
+    font-family:'Cairo',sans-serif; font-size:20px; letter-spacing:0.4em;
+    text-align:center; color:#3d2a10; outline:none; transition:border-color 0.3s;
+  }
+  .lock-input:focus { border-color:#c9a87c; }
+  .lock-btn {
+    margin-top:16px; width:100%; padding:15px; border-radius:50px; border:none;
+    background:linear-gradient(135deg,#c9a87c,#a0744a);
+    color:#fff; font-family:'Cairo',sans-serif; font-size:17px; font-weight:700;
+    cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;
+    box-shadow:0 4px 22px rgba(160,116,74,0.38);
+  }
+  .lock-btn:hover { transform:scale(1.03); }
+  .lock-err { color:#c0392b; font-size:13px; margin-top:12px; min-height:18px; }
+
+  /* MAIN */
+  #main-site { display:none; }
+  .texture-bg {
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(201,168,124,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 75%, rgba(180,140,100,0.09) 0%, transparent 55%);
+  }
+
+  /* FALLING ELEMENTS */
+  .falling-wrap { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .fall-item {
+    position:absolute; top:-60px; left:var(--lx);
+    font-size:var(--fs);
+    animation:fallDown var(--dur) linear forwards;
+    opacity:0.75;
+  }
+  @keyframes fallDown {
+    0%   { transform:translateY(0) rotate(0deg);   opacity:0.8; }
+    100% { transform:translateY(110vh) rotate(var(--rot)); opacity:0; }
+  }
+
+  /* MUSIC PLAYER */
+  .music-bar {
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    z-index:99;
+    background:#fff; border:1px solid #e2d9cf; border-radius:50px;
+    padding:10px 22px; display:flex; align-items:center; gap:12px;
+    box-shadow:0 4px 24px rgba(160,116,74,0.15);
+    font-size:13px; color:#7a5030;
+  }
+  .music-btn {
+    background:linear-gradient(135deg,#c9a87c,#a0744a);
+    border:none; border-radius:50%; width:36px; height:36px;
+    color:#fff; font-size:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform 0.2s;
+  }
+  .music-btn:hover { transform:scale(1.1); }
+  .music-label { font-family:'Cairo',sans-serif; font-size:12px; color:#a08060; }
+  .music-eq { display:flex; gap:3px; align-items:flex-end; height:16px; }
+  .eq-bar {
+    width:3px; border-radius:2px; background:#c9a87c;
+    animation:eqAnim var(--s) ease-in-out infinite alternate;
+  }
+  @keyframes eqAnim { from{height:4px} to{height:14px} }
+
+  /* COUNTER */
+  .counter-card {
+    background:linear-gradient(135deg,#fff8f0,#f5ece0);
+    border:1px solid #e0cdb8; border-radius:24px;
+    padding:28px 24px; text-align:center; margin-bottom:22px;
+    animation:fadeUp 1s 0.1s ease both;
+    box-shadow:0 4px 28px rgba(180,140,100,0.08);
+  }
+  .counter-label { font-size:13px; color:#b08050; letter-spacing:0.1em; margin-bottom:10px; }
+  .counter-num {
+    font-family:'Amiri',serif; font-size:62px; font-weight:700;
+    color:#7a4a18; line-height:1;
+    animation:popNum 0.3s ease;
+  }
+  @keyframes popNum { 0%{transform:scale(1.3)} 100%{transform:scale(1)} }
+  .counter-sub { font-size:13px; color:#a07050; margin-top:8px; font-style:italic; }
+
+  /* QUOTES */
+  .quote-card {
+    background:#fff; border:1px solid #e8ddd0; border-radius:24px;
+    padding:32px 30px; margin-bottom:22px; text-align:center;
+    animation:fadeUp 1s 0.2s ease both;
+    box-shadow:0 4px 28px rgba(180,140,100,0.07);
+    min-height:110px; position:relative; overflow:hidden;
+  }
+  .quote-card::before { content:'"'; position:absolute; top:-10px; right:20px; font-family:'Amiri',serif; font-size:100px; color:rgba(201,168,124,0.15); line-height:1; }
+  .quote-text {
+    font-family:'Amiri',serif; font-size:20px; color:#4a3020;
+    font-style:italic; line-height:1.9;
+    transition:opacity 0.6s, transform 0.6s;
+  }
+  .quote-text.fade-out { opacity:0; transform:translateY(10px); }
+  .quote-dots { margin-top:14px; display:flex; justify-content:center; gap:6px; }
+  .qdot { width:7px; height:7px; border-radius:50%; background:#e0cdb8; transition:background 0.3s; }
+  .qdot.active { background:#c9a87c; }
+
+  /* PAGE */
+  .page { position:relative; z-index:1; max-width:660px; margin:0 auto; padding:56px 22px 110px; }
+  .hero { text-align:center; margin-bottom:44px; animation:fadeUp 1s ease both; }
+  .hero-sub { font-size:13px; letter-spacing:0.25em; color:#b08050; text-transform:uppercase; margin-bottom:14px; }
+  .hero-name {
+    font-family:'Amiri',serif; font-size:clamp(68px,16vw,108px); font-weight:700;
+    color:#3d2a10; line-height:1; margin-bottom:10px;
+    text-shadow:2px 4px 24px rgba(160,116,74,0.18);
+  }
+  .hero-tagline { font-family:'Amiri',serif; font-size:21px; color:#8a6040; font-style:italic; }
+  .divider { text-align:center; margin:30px 0; color:#c9a87c; font-size:20px; letter-spacing:10px; opacity:0.55; }
+
+  .poem-card {
+    background:#fff; border:1px solid #e8ddd0; border-radius:24px;
+    padding:38px 34px; margin-bottom:22px; position:relative; overflow:hidden;
+    animation:fadeUp 1s 0.3s ease both;
+    box-shadow:0 4px 32px rgba(180,140,100,0.07);
+  }
+  .poem-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent,#c9a87c,transparent); }
+  .poem-label { font-size:11px; letter-spacing:0.2em; color:#c9a87c; text-transform:uppercase; margin-bottom:18px; }
+  .poem-text { font-family:'Amiri',serif; font-size:20px; line-height:2.1; color:#3d2a10; font-style:italic; }
+  .poem-text strong { color:#9a6030; font-style:normal; }
+
+  .feelings-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; animation:fadeUp 1s 0.4s ease both; }
+  .feeling-card {
+    background:#fff; border:1px solid #e8ddd0; border-radius:18px;
+    padding:22px 16px; text-align:center;
+    transition:transform 0.3s, box-shadow 0.3s;
+    box-shadow:0 2px 14px rgba(180,140,100,0.06);
+  }
+  .feeling-card:hover { transform:translateY(-6px); box-shadow:0 12px 32px rgba(180,140,100,0.13); }
+  .feel-icon { font-size:32px; margin-bottom:9px; display:block; }
+  .feel-label { font-size:11px; color:#b08050; letter-spacing:0.08em; margin-bottom:5px; }
+  .feel-val { font-size:15px; font-weight:700; color:#4a3020; }
+
+  .msg-section { margin-bottom:22px; animation:fadeUp 1s 0.5s ease both; }
+  .section-title { font-family:'Amiri',serif; font-size:26px; color:#5c3d1e; margin-bottom:18px; text-align:center; }
+  .msg-card {
+    background:#fff; border:1px solid #e8ddd0; border-radius:18px;
+    padding:22px 26px; margin-bottom:13px;
+    box-shadow:0 2px 14px rgba(180,140,100,0.05);
+    cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;
+  }
+  .msg-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(180,140,100,0.12); }
+  .msg-header { display:flex; align-items:center; gap:10px; }
+  .msg-icon { font-size:22px; }
+  .msg-title { font-weight:700; color:#4a3020; font-size:15px; }
+  .toggle-hint { font-size:11px; color:#c9a87c; margin-right:auto; }
+  .msg-body {
+    font-family:'Amiri',serif; font-size:18px; line-height:2; color:#5a4030;
+    font-style:italic; margin-top:14px; display:none;
+    padding-top:14px; border-top:1px solid #f0e8dc;
+  }
+  .msg-card.open { background:#fdf8f2; border-color:#c9a87c; }
+
+  .big-wish {
+    background:linear-gradient(135deg,#f0e6d6,#e8d8c0);
+    border:1px solid #d4b896; border-radius:24px;
+    padding:38px 30px; text-align:center;
+    animation:fadeUp 1s 0.65s ease both;
+    box-shadow:0 4px 32px rgba(180,140,100,0.1);
+    margin-bottom:24px;
+  }
+  .bw-title { font-family:'Amiri',serif; font-size:28px; color:#5c3d1e; margin-bottom:14px; }
+  .bw-text { font-family:'Amiri',serif; font-size:19px; line-height:2.1; color:#4a3020; font-style:italic; }
+  .heart-beat { font-size:64px; cursor:pointer; animation:hb 1.6s ease-in-out infinite; display:inline-block; margin-top:18px; }
+  @keyframes hb { 0%,100%{transform:scale(1)} 14%{transform:scale(1.25)} 28%{transform:scale(1)} 42%{transform:scale(1.15)} }
+
+  .footer { text-align:center; padding:28px 0 10px; color:#b08050; font-size:13px; letter-spacing:0.1em; line-height:2; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <span class="lock-icon">🔒</span>
+    <div class="lock-title">موقع خاص جداً</div>
+    <div class="lock-sub">ادخلي الباسورد عشان تفتحي قلبي 🤍</div>
+    <input class="lock-input" type="password" id="pwd" placeholder="••••" maxlength="10" onkeydown="if(event.key==='Enter')tryPass()" autofocus />
+    <button class="lock-btn" onclick="tryPass()">✨ ادخلي</button>
+    <div class="lock-err" id="err-msg"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-site">
+  <div class="falling-wrap" id="falling"></div>
+  <div class="texture-bg"></div>
+
+  <!-- MUSIC BAR -->
+  <audio id="bg-audio" loop>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+  <div class="music-bar">
+    <button class="music-btn" id="music-btn" onclick="toggleMusic()">▶</button>
+    <div>
+      <div style="font-weight:600;font-size:13px;color:#5c3d1e">نارين — تووليت 🎵</div>
+      <div class="music-label">اضغط للتشغيل</div>
+    </div>
+    <div class="music-eq" id="eq" style="display:none">
+      <div class="eq-bar" style="--s:0.5s"></div>
+      <div class="eq-bar" style="--s:0.7s"></div>
+      <div class="eq-bar" style="--s:0.4s"></div>
+      <div class="eq-bar" style="--s:0.6s"></div>
+      <div class="eq-bar" style="--s:0.8s"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="hero">
+      <div class="hero-sub">✦ موقع مخصوص ومُهدى إلى ✦</div>
+      <div class="hero-name">مريدولا</div>
+      <div class="hero-tagline">قابلتها الصدفة... لكن القلب عرف من أول لحظة</div>
+    </div>
+
+    <div class="divider">✦ ◇ ✦</div>
+
+    <!-- COUNTER -->
+    <div class="counter-card">
+      <div class="counter-label">💭 عدد المرات اللي فكرت فيكِ</div>
+      <div class="counter-num" id="counter">0</div>
+      <div class="counter-sub">وكل ثانيتين... يزيد واحد 🤍</div>
+    </div>
+
+    <!-- QUOTES -->
+    <div class="quote-card">
+      <div class="quote-text" id="quote-text">جار التحميل...</div>
+      <div class="quote-dots" id="qdots"></div>
+    </div>
+
+    <div class="poem-card">
+      <div class="poem-label">🌸 قصيدة الصدفة</div>
+      <div class="poem-text">
+        ما كنت أبحث عنكِ يا <strong>مريدولا</strong>،<br>
+        لكن كأن الكون رسم خطوطاً تجمعنا،<br>
+        مررتِ كنسيم خفيف في يوم عادي،<br>
+        وتركتِ في الروح أثراً لا يُنسى...<br><br>
+        اسمكِ يختلف، وحضورك يختلف،<br>
+        وكل ما أتمناه — أن تظلي معي 🤍
+      </div>
+    </div>
+
+    <div class="feelings-grid">
+      <div class="feeling-card"><span class="feel-icon">🌸</span><div class="feel-label">كيف التقينا</div><div class="feel-val">بالصدفة الجميلة</div></div>
+      <div class="feeling-card"><span class="feel-icon">💭</span><div class="feel-label">أفكر فيها</div><div class="feel-val">كل يوم وكل وقت</div></div>
+      <div class="feeling-card"><span class="feel-icon">🤍</span><div class="feel-label">لونها المفضل</div><div class="feel-val">الأبيض الناصع</div></div>
+      <div class="feeling-card"><span class="feel-icon">🌙</span><div class="feel-label">أمنيتي</div><div class="feel-val">أكون معاها يوم</div></div>
+    </div>
+
+    <div class="msg-section">
+      <div class="section-title">💌 رسائل من القلب</div>
+
+      <div class="msg-card" onclick="toggleMsg(this)">
+        <div class="msg-header"><span class="msg-icon">🌹</span><div class="msg-title">الرسالة الأولى — لما شفتكِ أول مرة</div><span class="toggle-hint">اضغطي ▾</span></div>
+        <div class="msg-body">في تلك اللحظة التي رأيتكِ فيها، توقفت الدنيا لثانية...<br>مريدولا — اسم لم أسمعه من قبل، لكنه رسخ في ذاكرتي كأنني كنت أنتظره.<br>عيناكِ فيها قصة أريد أن أسمعها،<br>وابتسامتكِ فيها دفء أريد أن أعيش فيه 🤍</div>
+      </div>
+
+      <div class="msg-card" onclick="toggleMsg(this)">
+        <div class="msg-header"><span class="msg-icon">✨</span><div class="msg-title">الرسالة الثانية — ما يميزكِ</div><span class="toggle-hint">اضغطي ▾</span></div>
+        <div class="msg-body">في الناس كثيرون، لكن فيكِ شيء مختلف تماماً،<br>طريقتكِ، حضورك، الطريقة اللي مشيتِ بيها...<br>أنتِ مش مجرد شخص قابلته — أنتِ شخص خليتني أفكر من جديد<br>في معنى اللقاء، وفي معنى الصدفة،<br>وفي معنى إنك تتمنى تكمل حوار لسه ما بدأش 💫</div>
+      </div>
+
+      <div class="msg-card" onclick="toggleMsg(this)">
+        <div class="msg-header"><span class="msg-icon">🕊️</span><div class="msg-title">الرسالة الثالثة — ما أخاف قوله</div><span class="toggle-hint">اضغطي ▾</span></div>
+        <div class="msg-body">صعب قول بعض الكلام بصوت عالي...<br>لكن هنا — في هذا الموقع اللي صنعته خصيصاً لكِ —<br>أقدر أقول: يا مريدولا، أنتِ شغلت تفكيري<br>وبتمنى لو الصدفة اللي جمعتنا تكررت مرة... ومرتين... ومرات 🌸</div>
+      </div>
+
+      <div class="msg-card" onclick="toggleMsg(this)">
+        <div class="msg-header"><span class="msg-icon">🌙</span><div class="msg-title">الرسالة الرابعة — أمنية الليل</div><span class="toggle-hint">اضغطي ▾</span></div>
+        <div class="msg-body">كل ليلة قبل النوم بفكر...<br>ترى هي بتفكر؟ ترى عندها أي فكرة إن في حد بيفكر فيها كده؟<br>يا ريت الحروف توصلكِ — يا مريدولا —<br>إنك مش مجرد اسم عندي... أنتِ أمنية 🌙✨</div>
+      </div>
+
+      <div class="msg-card" onclick="toggleMsg(this)">
+        <div class="msg-header"><span class="msg-icon">🌺</span><div class="msg-title">الرسالة الخامسة — لو قدرت أقول</div><span class="toggle-hint">اضغطي ▾</span></div>
+        <div class="msg-body">لو قدرت أقابلكِ تاني، مش هقول كلام كتير،<br>بس هقول: أنا سعيد إن الصدفة جمعتنا،<br>وبتمنى نبدأ من الأول — بس من غير ما تنتهي المرة دي بسرعة...<br>أنتِ تستاهلي كل الوقت والاهتمام يا مريدولا 🌺🤍</div>
+      </div>
+    </div>
+
+    <div class="big-wish">
+      <div class="bw-title">🤍 أغلى أمنية</div>
+      <div class="bw-text">
+        يا مريدولا...<br>
+        لو الكون سمع — أتمنى لقاء واحد،<br>
+        أجلس قدامكِ، أسمع صوتكِ، وأعرفكِ زيادة.<br>
+        ومش عارف إيه اللي بعده،<br>
+        لكن أعرف إن حضورك بيفرق 🤍🌸
+      </div>
+      <div onclick="burstFalling()"><span class="heart-beat">🤍</span></div>
+      <div style="font-size:12px;color:#b08050;margin-top:10px">اضغطي على القلب 🤍</div>
+    </div>
+
+    <div class="footer">✦ صُنع بكل الإخلاص والأمل ✦<br>خصيصاً لـ مريدولا</div>
+  </div>
+</div>
+
+<script>
+/* ── PASSWORD ── */
+function tryPass() {
+  const v = document.getElementById('pwd').value.trim().toLowerCase();
+  if (v === 'mimi') {
+    document.getElementById('lock-screen').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('lock-screen').style.display = 'none';
+      document.getElementById('main-site').style.display = 'block';
+      initAll();
+      setTimeout(() => { const a = document.getElementById('bg-audio'); a.volume = 0.7; a.play().then(() => { musicPlaying = true; document.getElementById('music-btn').textContent = '⏸'; document.getElementById('eq').style.display = 'flex'; document.querySelector('.music-label').textContent = 'تعزف لكِ... 🎵'; }).catch(()=>{}); }, 400);
+    }, 850);
+  } else {
+    const err = document.getElementById('err-msg');
+    err.textContent = '❌ الباسورد غلط... جربي تاني';
+    document.getElementById('pwd').style.borderColor = '#e74c3c';
+    setTimeout(() => { err.textContent = ''; document.getElementById('pwd').style.borderColor = ''; }, 2000);
+  }
+}
+
+/* ── MESSAGES ── */
+function toggleMsg(card) {
+  const body = card.querySelector('.msg-body');
+  const isOpen = body.style.display === 'block';
+  document.querySelectorAll('.msg-body').forEach(b => b.style.display = 'none');
+  document.querySelectorAll('.msg-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) { body.style.display = 'block'; card.classList.add('open'); }
+}
+
+/* ── COUNTER ── */
+let countVal = 1247;
+function initCounter() {
+  document.getElementById('counter').textContent = countVal.toLocaleString('ar-EG');
+  setInterval(() => {
+    countVal++;
+    const el = document.getElementById('counter');
+    el.textContent = countVal.toLocaleString('ar-EG');
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'popNum 0.3s ease';
+  }, 2000);
+}
+
+/* ── QUOTES ── */
+const quotes = [
+  'حين تكونين بعيدة، أشعر أن شيئاً ما ناقصاً لا أستطيع تسميته... لكنه أنتِ 🤍',
+  'الصدفة لا تجمع الناس عبثاً — أنتِ دليل على أن الكون يعرف ما يفعله 🌸',
+  'أجمل الأشياء لا تُشترى ولا تُطلب... بعضها يأتي فجأة، كما جئتِ أنتِ 💫',
+  'في كل مرة أذكر اسمكِ، يبتسم قلبي وحده 🌙',
+  'لو كان بإمكاني تغيير لحظة في حياتي، لما غيّرت اللحظة التي رأيتكِ فيها ✨',
+  'أنتِ لستِ مجرد ذكرى... أنتِ شعور لا يغادر 🌹',
+  'بعض الناس يمرون في حياتنا كضيوف، وبعضهم يسكنون القلب بلا إذن — أنتِ من الصنف الثاني 🤍',
+  'مريدولا... اسم يكفي لوحده ليجعل اليوم أجمل 🌺',
+];
+let qIdx = 0;
+function initQuotes() {
+  const dots = document.getElementById('qdots');
+  quotes.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'qdot' + (i === 0 ? ' active' : '');
+    dots.appendChild(d);
+  });
+  document.getElementById('quote-text').textContent = quotes[0];
+  setInterval(() => {
+    const el = document.getElementById('quote-text');
+    el.classList.add('fade-out');
+    setTimeout(() => {
+      qIdx = (qIdx + 1) % quotes.length;
+      el.textContent = quotes[qIdx];
+      el.classList.remove('fade-out');
+      document.querySelectorAll('.qdot').forEach((d, i) => d.classList.toggle('active', i === qIdx));
+    }, 600);
+  }, 5000);
+}
+
+/* ── FALLING ELEMENTS ── */
+const fallItems = ['🌸','🌹','✨','🤍','💫','🌺','🌼','⭐','🕊️'];
+function spawnFall() {
+  const el = document.createElement('div');
+  el.className = 'fall-item';
+  el.textContent = fallItems[Math.floor(Math.random() * fallItems.length)];
+  const fs = Math.random() * 14 + 10;
+  const lx = Math.random() * 96 + 2;
+  const dur = (Math.random() * 4 + 5).toFixed(1);
+  const rot = Math.random() * 120 - 60;
+  el.style.cssText = `--fs:${fs}px;--lx:${lx}%;--dur:${dur}s;--rot:${rot}deg`;
+  document.getElementById('falling').appendChild(el);
+  setTimeout(() => el.remove(), (dur * 1000) + 200);
+}
+function burstFalling() {
+  for (let i = 0; i < 24; i++) setTimeout(spawnFall, i * 60);
+}
+function startFalling() {
+  for (let i = 0; i < 8; i++) setTimeout(spawnFall, i * 400);
+  setInterval(spawnFall, 900);
+}
+
+/* ── MUSIC ── */
+let musicPlaying = false;
+function toggleMusic() {
+  const audio = document.getElementById('bg-audio');
+  if (!musicPlaying) {
+    audio.volume = 0.7;
+    audio.play();
+    musicPlaying = true;
+    document.getElementById('music-btn').textContent = '⏸';
+    document.getElementById('eq').style.display = 'flex';
+    document.querySelector('.music-label').textContent = 'تعزف لكِ... 🎵';
+  } else {
+    audio.pause();
+    musicPlaying = false;
+    document.getElementById('music-btn').textContent = '▶';
+    document.getElementById('eq').style.display = 'none';
+    document.querySelector('.music-label').textContent = 'اضغط للتشغيل';
+  }
+}
+
+/* ── INIT ── */
+function initAll() {
+  initCounter();
+  initQuotes();
+  startFalling();
+}
+</script>
+</body>
+</html>
